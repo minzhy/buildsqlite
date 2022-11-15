@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
 
 #define COLUMN_USERNAME_SIZE 32
 #define COLUMN_EMAIL_SIZE 255
@@ -37,8 +40,15 @@ typedef enum{
 // 而不是对数据库操作的command
 
 typedef struct {
-  uint32_t num_rows;
-  void* pages[TABLE_MAX_PAGES];
+  int file_descriptor;          // 这个表示外存上的page
+  uint32_t file_length;
+  void* pages[TABLE_MAX_PAGES]; // 这个表示内存的page
+} Pager;
+
+typedef struct {
+  uint32_t num_rows; // 一共有多少rows
+  // void* pages[TABLE_MAX_PAGES];
+  Pager* pager;
 } Table;
 
 typedef struct{
@@ -64,7 +74,7 @@ void print_prompt();
 
 // main.c
 InputBuffer* new_input_buffer();
-MetaCommandResult do_meta_command(InputBuffer*);
+MetaCommandResult do_meta_command(InputBuffer* input_buffer, Table* table);
 void read_input(InputBuffer* );
 void close_input_buffer(InputBuffer* );
 
@@ -82,7 +92,14 @@ void serialize_row(Row* source, void* destination);
 void deserialize_row(void* source, Row* destination);
 
 // table.c
-Table* new_table();
-void free_table(Table* table);
+// Table* new_table();
+Table* db_open(const char* filename);
+// void free_table(Table* table);
+void db_close(Table* table);
+
+// page.c
+void* get_page(Pager* pager, uint32_t page_num);
+Pager* pager_open(const char* filename);
+void pager_flush(Pager* pager, uint32_t page_num, uint32_t size);
 
 #endif
