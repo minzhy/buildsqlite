@@ -69,6 +69,12 @@ typedef struct {
   ssize_t input_length;
 } InputBuffer;
 
+typedef struct {
+  Table* table;
+  uint32_t row_num;
+  bool end_of_table;  // Indicates a position one past the last element
+} Cursor;
+
 // util.c
 void print_prompt();
 
@@ -101,5 +107,11 @@ void db_close(Table* table);
 void* get_page(Pager* pager, uint32_t page_num);
 Pager* pager_open(const char* filename);
 void pager_flush(Pager* pager, uint32_t page_num, uint32_t size);
+
+// cursor.c
+Cursor* table_start(Table* table);
+Cursor* table_end(Table* table);
+void* cursor_value(Cursor* cursor);
+void cursor_advance(Cursor* cursor);
 
 #endif
