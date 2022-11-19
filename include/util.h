@@ -26,11 +26,42 @@ extern const uint32_t ROW_SIZE;
 extern const uint32_t ROWS_PER_PAGE;
 extern const uint32_t TABLE_MAX_ROWS;
 
+/*
+ * Common Node Header Layout
+ */
+extern const uint32_t NODE_TYPE_OFFSET;
+extern const uint32_t IS_ROOT_SIZE;
+extern const uint32_t IS_ROOT_OFFSET;
+extern const uint32_t NODE_TYPE_SIZE;
+extern const uint32_t PARENT_POINTER_SIZE;
+extern const uint32_t PARENT_POINTER_OFFSET;
+extern const uint8_t COMMON_NODE_HEADER_SIZE;
+
+/*
+ * Leaf Node Header Layout
+ */
+extern const uint32_t LEAF_NODE_NUM_CELLS_SIZE;
+extern const uint32_t LEAF_NODE_NUM_CELLS_OFFSET ;
+extern const uint32_t LEAF_NODE_HEADER_SIZE ;
+
+/*
+ * Leaf Node Body Layout
+ */
+extern const uint32_t LEAF_NODE_KEY_SIZE ;
+extern const uint32_t LEAF_NODE_KEY_OFFSET ;
+extern const uint32_t LEAF_NODE_VALUE_SIZE ;
+extern const uint32_t LEAF_NODE_VALUE_OFFSET ;
+extern const uint32_t LEAF_NODE_CELL_SIZE ;
+extern const uint32_t LEAF_NODE_SPACE_FOR_CELLS ;
+extern const uint32_t LEAF_NODE_MAX_CELLS;
+
 typedef enum { EXECUTE_SUCCESS, EXECUTE_TABLE_FULL } ExecuteResult;
 
 typedef enum { PREPARE_SUCCESS, PREPARE_NEGATIVE_ID, PREPARE_STRING_TOO_LONG, PREPARE_SYNTAX_ERROR, PREPARE_UNRECOGNIZED_STATEMENT } PrepareResult;
 
 typedef enum { STATEMENT_INSERT, STATEMENT_SELECT } StatementType;
+
+typedef enum { NODE_INTERNAL, NODE_LEAF } NodeType;
 
 typedef enum{
   META_COMMAND_SUCCESS,
@@ -43,12 +74,14 @@ typedef struct {
   int file_descriptor;          // 这个表示外存上的page
   uint32_t file_length;
   void* pages[TABLE_MAX_PAGES]; // 这个表示内存的page
+  uint32_t num_pages; //记录一共存了多少page
 } Pager;
 
 typedef struct {
-  uint32_t num_rows; // 一共有多少rows
+  // uint32_t num_rows; // 一共有多少rows
   // void* pages[TABLE_MAX_PAGES];
   Pager* pager;
+  uint32_t root_page_num;
 } Table;
 
 typedef struct{
@@ -71,12 +104,15 @@ typedef struct {
 
 typedef struct {
   Table* table;
-  uint32_t row_num;
+  // uint32_t row_num; 以page为单位，不需要记录row_num了
+  uint32_t page_num;
+  uint32_t cell_num;
   bool end_of_table;  // Indicates a position one past the last element
 } Cursor;
 
 // util.c
 void print_prompt();
+void print_constants();
 
 // main.c
 InputBuffer* new_input_buffer();
@@ -106,12 +142,21 @@ void db_close(Table* table);
 // page.c
 void* get_page(Pager* pager, uint32_t page_num);
 Pager* pager_open(const char* filename);
-void pager_flush(Pager* pager, uint32_t page_num, uint32_t size);
+void pager_flush(Pager* pager, uint32_t page_num);
 
 // cursor.c
 Cursor* table_start(Table* table);
 Cursor* table_end(Table* table);
 void* cursor_value(Cursor* cursor);
 void cursor_advance(Cursor* cursor);
+
+// node.c
+uint32_t* leaf_node_num_cells(void* node);
+void* leaf_node_cell(void* node, uint32_t cell_num);
+uint32_t* leaf_node_key(void* node, uint32_t cell_num);
+void* leaf_node_value(void* node, uint32_t cell_num);
+void initialize_leaf_node(void* node);
+void leaf_node_insert(Cursor* cursor, uint32_t key, Row* value);
+void print_leaf_node(void* node);
 
 #endif

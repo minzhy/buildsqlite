@@ -31,6 +31,10 @@ void* get_page(Pager* pager, uint32_t page_num) {
     // 但后面用了b+ tree之后，就不在有这个问题了！
 
     pager->pages[page_num] = page;
+
+    if (page_num >= pager->num_pages) {
+      pager->num_pages = page_num + 1;
+    }
   }
 
   return pager->pages[page_num];
@@ -56,6 +60,13 @@ Pager* pager_open(const char* filename) {
   pager->file_descriptor = fd;
   pager->file_length = file_length;
 
+  pager->num_pages = (file_length / PAGE_SIZE);
+  // 以page为单位操作，所以一定需要整除
+  if (file_length % PAGE_SIZE != 0) {
+    printf("Db file is not a whole number of pages. Corrupt file.\n");
+    exit(EXIT_FAILURE);
+  }
+
   for (uint32_t i = 0; i < TABLE_MAX_PAGES; i++) {
     pager->pages[i] = NULL;
   }
@@ -63,8 +74,31 @@ Pager* pager_open(const char* filename) {
   return pager;
 }
 
-// 把page写入外存
-void pager_flush(Pager* pager, uint32_t page_num, uint32_t size) {
+// // 把page写入外存
+// void pager_flush(Pager* pager, uint32_t page_num, uint32_t size) {
+//   if (pager->pages[page_num] == NULL) {
+//     printf("Tried to flush null page\n");
+//     exit(EXIT_FAILURE);
+//   }
+
+//   off_t offset = lseek(pager->file_descriptor, page_num * PAGE_SIZE, SEEK_SET);
+
+//   if (offset == -1) {
+//     printf("Error seeking: %d\n", errno);
+//     exit(EXIT_FAILURE);
+//   }
+
+//   ssize_t bytes_written =
+//       write(pager->file_descriptor, pager->pages[page_num], size);
+
+//   if (bytes_written == -1) {
+//     printf("Error writing: %d\n", errno);
+//     exit(EXIT_FAILURE);
+//   }
+// }
+
+// 以一个page为单位操作！不需要单独操作某个row
+void pager_flush(Pager* pager, uint32_t page_num) {
   if (pager->pages[page_num] == NULL) {
     printf("Tried to flush null page\n");
     exit(EXIT_FAILURE);
@@ -78,7 +112,7 @@ void pager_flush(Pager* pager, uint32_t page_num, uint32_t size) {
   }
 
   ssize_t bytes_written =
-      write(pager->file_descriptor, pager->pages[page_num], size);
+      write(pager->file_descriptor, pager->pages[page_num], PAGE_SIZE);
 
   if (bytes_written == -1) {
     printf("Error writing: %d\n", errno);
