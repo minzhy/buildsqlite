@@ -55,7 +55,12 @@ extern const uint32_t LEAF_NODE_CELL_SIZE ;
 extern const uint32_t LEAF_NODE_SPACE_FOR_CELLS ;
 extern const uint32_t LEAF_NODE_MAX_CELLS;
 
-typedef enum { EXECUTE_SUCCESS, EXECUTE_TABLE_FULL } ExecuteResult;
+// typedef enum { EXECUTE_SUCCESS, EXECUTE_TABLE_FULL } ExecuteResult;
+typedef enum {
+  EXECUTE_SUCCESS,
+  EXECUTE_DUPLICATE_KEY,
+  EXECUTE_TABLE_FULL
+}ExecuteResult;
 
 typedef enum { PREPARE_SUCCESS, PREPARE_NEGATIVE_ID, PREPARE_STRING_TOO_LONG, PREPARE_SYNTAX_ERROR, PREPARE_UNRECOGNIZED_STATEMENT } PrepareResult;
 
@@ -146,7 +151,8 @@ void pager_flush(Pager* pager, uint32_t page_num);
 
 // cursor.c
 Cursor* table_start(Table* table);
-Cursor* table_end(Table* table);
+// Cursor* table_end(Table* table);
+Cursor* table_find(Table* table, uint32_t key);
 void* cursor_value(Cursor* cursor);
 void cursor_advance(Cursor* cursor);
 
@@ -158,5 +164,8 @@ void* leaf_node_value(void* node, uint32_t cell_num);
 void initialize_leaf_node(void* node);
 void leaf_node_insert(Cursor* cursor, uint32_t key, Row* value);
 void print_leaf_node(void* node);
+Cursor* leaf_node_find(Table* table, uint32_t page_num, uint32_t key);
+NodeType get_node_type(void* node);
+void set_node_type(void* node, NodeType type) ;
 
 #endif
