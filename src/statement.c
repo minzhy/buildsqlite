@@ -22,9 +22,9 @@ ExecuteResult execute_insert(Statement* statement, Table* table) {
   // if (table->num_rows >= TABLE_MAX_ROWS) {
   void* node = get_page(table->pager, table->root_page_num);
   uint32_t num_cells = (*leaf_node_num_cells(node));
-  if (num_cells >= LEAF_NODE_MAX_CELLS) {
-    return EXECUTE_TABLE_FULL;
-  }
+  // if (num_cells >= LEAF_NODE_MAX_CELLS) {
+  //   return EXECUTE_TABLE_FULL;
+  // }
 
   Row* row_to_insert = &(statement->row_to_insert);
 
