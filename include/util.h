@@ -42,6 +42,8 @@ extern const uint8_t COMMON_NODE_HEADER_SIZE;
  */
 extern const uint32_t LEAF_NODE_NUM_CELLS_SIZE;
 extern const uint32_t LEAF_NODE_NUM_CELLS_OFFSET ;
+extern const uint32_t LEAF_NODE_NEXT_LEAF_SIZE;
+extern const uint32_t LEAF_NODE_NEXT_LEAF_OFFSET;
 extern const uint32_t LEAF_NODE_HEADER_SIZE ;
 
 /*
@@ -205,5 +207,6 @@ void set_node_root(void* node, bool is_root);
 void indent(uint32_t level);
 void print_tree(Pager* pager, uint32_t page_num, uint32_t indentation_level);
 Cursor* internal_node_find(Table* table, uint32_t page_num, uint32_t key);
+uint32_t* leaf_node_next_leaf(void* node);
 
 #endif
