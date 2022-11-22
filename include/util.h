@@ -58,24 +58,27 @@ extern const uint32_t LEAF_NODE_SPACE_FOR_CELLS ;
 extern const uint32_t LEAF_NODE_MAX_CELLS;
 
 // leaf node size
-const uint32_t LEAF_NODE_RIGHT_SPLIT_COUNT;
-const uint32_t LEAF_NODE_LEFT_SPLIT_COUNT;
+extern const uint32_t LEAF_NODE_RIGHT_SPLIT_COUNT;
+extern const uint32_t LEAF_NODE_LEFT_SPLIT_COUNT;
 
 /*
  * Internal Node Header Layout
  */
-const uint32_t INTERNAL_NODE_NUM_KEYS_SIZE;
-const uint32_t INTERNAL_NODE_NUM_KEYS_OFFSET;
-const uint32_t INTERNAL_NODE_RIGHT_CHILD_SIZE;
-const uint32_t INTERNAL_NODE_RIGHT_CHILD_OFFSET;
-const uint32_t INTERNAL_NODE_HEADER_SIZE;
+extern const uint32_t INTERNAL_NODE_NUM_KEYS_SIZE;
+extern const uint32_t INTERNAL_NODE_NUM_KEYS_OFFSET;
+extern const uint32_t INTERNAL_NODE_RIGHT_CHILD_SIZE;
+extern const uint32_t INTERNAL_NODE_RIGHT_CHILD_OFFSET;
+extern const uint32_t INTERNAL_NODE_HEADER_SIZE;
 
 /*
  * Internal Node Body Layout
  */
-const uint32_t INTERNAL_NODE_KEY_SIZE;
-const uint32_t INTERNAL_NODE_CHILD_SIZE;
-const uint32_t INTERNAL_NODE_CELL_SIZE;
+extern const uint32_t INTERNAL_NODE_KEY_SIZE;
+extern const uint32_t INTERNAL_NODE_CHILD_SIZE;
+extern const uint32_t INTERNAL_NODE_CELL_SIZE;
+
+/* Keep this small for testing */
+extern const uint32_t INTERNAL_NODE_MAX_CELLS;
 
 // typedef enum { EXECUTE_SUCCESS, EXECUTE_TABLE_FULL } ExecuteResult;
 typedef enum {
@@ -208,5 +211,11 @@ void indent(uint32_t level);
 void print_tree(Pager* pager, uint32_t page_num, uint32_t indentation_level);
 Cursor* internal_node_find(Table* table, uint32_t page_num, uint32_t key);
 uint32_t* leaf_node_next_leaf(void* node);
+uint32_t* node_parent(void* node);
+void update_internal_node_key(void* node, uint32_t old_key, uint32_t new_key);
+uint32_t* node_parent(void* node);
+uint32_t internal_node_find_child(void* node, uint32_t key);
+void internal_node_insert(Table* table, uint32_t parent_page_num,
+                          uint32_t child_page_num);
 
 #endif
