@@ -1,2 +1,7 @@
 src/mydb.db
 src/main
+spec/main_spec.rb
+db
+Gemfile
+Gemfile.lock
+test.db
